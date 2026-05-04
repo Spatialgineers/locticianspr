@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paraíso Real | SGX Transparency Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        
+        :root {
+            --sgx-blue: #32527B;
+            --sgx-gold: #FDCC0D;
+            --sgx-dark: #0f172a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--sgx-dark);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sgx-border { border-left: 4px solid var(--sgx-gold); }
+        
+        #viewer-container {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            cursor: move;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        input, select, textarea {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: white !important;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="p-6 glass flex justify-between items-center sticky top-0 z-50">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#FDCC0D] rounded-full flex items-center justify-center text-black font-bold">PR</div>
+            <h1 class="text-xl font-bold tracking-tighter uppercase">Paraíso Real</h1>
+        </div>
+        <div class="flex gap-6 text-sm font-medium uppercase tracking-widest">
+            <button onclick="showTab('home')" class="hover:text-[#FDCC0D] transition">Inicio</button>
+            <button onclick="showTab('properties')" class="hover:text-[#FDCC0D] transition">Propiedades</button>
+            <button onclick="showTab('admin')" class="bg-[#FDCC0D] text-black px-4 py-1 rounded shadow-lg hover:scale-105 transition">Admin Dashboard</button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-8">
+
+        <section id="home" class="tab-content active space-y-12">
+            <div class="grid md:grid-cols-2 gap-12 items-center py-12">
+                <div class="space-y-6">
+                    <h2 class="text-5xl font-bold leading-tight sgx-border pl-6 uppercase">Yamira <br><span class="text-[#FDCC0D]">Paraíso Real</span></h2>
+                    <p class="text-gray-400 text-lg">Realtor® con enfoque estratégico y tecnológico. Transformando la visualización inmobiliaria en experiencias inmersivas que cierran tratos.</p>
+                    <div class="flex gap-4">
+                        <div class="glass p-4 rounded-xl text-center flex-1">
+                            <span class="block text-2xl font-bold text-[#FDCC0D]">15+</span>
+                            <span class="text-xs text-gray-500 uppercase">Años Exp.</span>
+                        </div>
+                        <div class="glass p-4 rounded-xl text-center flex-1">
+                            <span class="block text-2xl font-bold text-[#FDCC0D]">100%</span>
+                            <span class="text-xs text-gray-500 uppercase">Transparencia</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="h-[400px] bg-gray-800 rounded-3xl overflow-hidden relative group">
+                    <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Interior">
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <button onclick="showTab('properties')" class="bg-white/10 backdrop-blur-xl p-6 rounded-full border border-white/20 hover:scale-110 transition">
+                            <i data-lucide="eye" class="w-12 h-12 text-[#FDCC0D]"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="properties" class="tab-content space-y-8">
+            <div class="flex justify-between items-end">
+                <h2 class="text-3xl font-bold uppercase">Listado Inmersivo</h2>
+                <span class="text-sm text-gray-500">Filtrando prospectos mediante SGX.Showcase</span>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="glass p-4 rounded-2xl space-y-4">
+                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-48 object-cover" alt="Villa">
+                    <div>
+                        <h3 class="font-bold text-lg">Villa del Sol, Isabela</h3>
+                        <p class="text-sm text-gray-400">$850,000 | 4 Hab | 3 Baños</p>
+                    </div>
+                    <button onclick="open360('https://threejs.org/examples/textures/2294472375_b9a84c0c3a_k.jpg')" class="w-full py-3 bg-[#32527B] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition">
+                        <i data-lucide="rotate-3d"></i> VER EN 360º
+                    </button>
+                </div>
+            </div>
+
+            <div id="modal-360" class="hidden fixed inset-0 z-[100] bg-black/90 p-4 md:p-12">
+                <div class="max-w-5xl mx-auto h-full flex flex-col space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-bold">Experiencia 360º | <span class="text-[#FDCC0D]">Motor WebGL SGX</span></h3>
+                        <button onclick="close360()" class="p-2 hover:bg-white/10 rounded-full transition"><i data-lucide="x"></i></button>
+                    </div>
+                    <div id="viewer-container"></div>
+                    <p class="text-center text-xs text-gray-500 italic">Usa el mouse o toca para explorar el espacio</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="admin" class="tab-content space-y-8">
+            <div class="grid md:grid-cols-4 gap-6">
+                <div class="md:col-span-1 glass p-6 rounded-2xl h-fit space-y-6">
+                    <h3 class="font-bold text-gray-500 uppercase text-xs">Gestión de Esfuerzo</h3>
+                    <nav class="space-y-2">
+                        <button class="w-full text-left p-3 rounded-lg bg-[#FDCC0D]/10 text-[#FDCC0D] border border-[#FDCC0D]/20">Effort Tracker</button>
+                        <button class="w-full text-left p-3 rounded-lg hover:bg-white/5 transition">Propiedades</button>
+                        <button class="w-full text-left p-3 rounded-lg hover:bg-white/5 transition">Leads</button>
+                    </nav>
+                </div>
+
+                <div class="md:col-span-3 space-y-6">
+                    <div class="glass p-8 rounded-3xl space-y-6">
+                        <h2 class="text-2xl font-bold uppercase">Log de Gastos Operativos</h2>
+                        <form id="expense-form" class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2">
+                                <label class="text-xs uppercase text-gray-500 mb-1 block">Propiedad</label>
+                                <select id="exp-property" class="w-full p-3 rounded-lg outline-none">
+                                    <option>Villa del Sol, Isabela</option>
+                                    <option>Condo Marazul, SJ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase text-gray-500 mb-1 block">Categoría</label>
+                                <select id="exp-cat" class="w-full p-3 rounded-lg outline-none">
+                                    <option>Marketing / Ads</option>
+                                    <option>Mantenimiento</option>
+                                    <option>Staging</option>
+                                    <option>Transporte</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs uppercase text-gray-500 mb-1 block">Monto ($)</label>
+                                <input id="exp-amount" type="number" step="0.01" class="w-full p-3 rounded-lg outline-none" placeholder="0.00">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-xs uppercase text-gray-500 mb-1 block">Descripción del Esfuerzo</label>
+                                <textarea id="exp-desc" class="w-full p-3 rounded-lg outline-none h-24" placeholder="Detalla el trabajo realizado..."></textarea>
+                            </div>
+                            <button type="submit" class="col-span-2 bg-[#FDCC0D] text-black py-4 rounded-xl font-bold hover:bg-yellow-500 transition">REGISTRAR ESFUERZO</button>
+                        </form>
+                    </div>
+
+                    <div class="glass p-8 rounded-3xl overflow-hidden">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold uppercase">Reporte de Transparencia Real-Time</h3>
+                            <button onclick="clearExpenses()" class="text-xs text-red-400 hover:underline">Resetear Logs</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="text-xs text-gray-500 border-b border-white/10 uppercase">
+                                        <th class="pb-4">Fecha</th>
+                                        <th class="pb-4">Categoría</th>
+                                        <th class="pb-4">Descripción</th>
+                                        <th class="pb-4 text-right">Inversión</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expense-list" class="text-sm">
+                                    </tbody>
+                                <tfoot>
+                                    <tr class="font-bold border-t border-white/20">
+                                        <td colspan="3" class="pt-4">TOTAL INVERTIDO EN LA VENTA</td>
+                                        <td id="total-amount" class="pt-4 text-right text-[#FDCC0D] text-lg">$0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="p-12 text-center text-xs text-gray-600 uppercase tracking-widest space-y-2">
+        <p>Propulsado por la arquitectura SGX de Spatialgineers</p>
+        <p>© 2026 Paraíso Real Bienes Raíces</p>
+    </footer>
+
+    <script>
+        // --- NAVEGACIÓN ---
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // --- DASHBOARD LOGIC (Tier 3) ---
+        const expenseForm = document.getElementById('expense-form');
+        const expenseList = document.getElementById('expense-list');
+        const totalAmountEl = document.getElementById('total-amount');
+
+        let expenses = JSON.parse(localStorage.getItem('sgx_expenses')) || [];
+
+        function updateUI() {
+            expenseList.innerHTML = '';
+            let total = 0;
+            expenses.forEach((exp, index) => {
+                total += parseFloat(exp.amount);
+                const row = document.createElement('tr');
+                row.className = "border-b border-white/5 hover:bg-white/5";
+                row.innerHTML = `
+                    <td class="py-4 text-gray-500">${exp.date}</td>
+                    <td class="py-4 font-medium">${exp.category}</td>
+                    <td class="py-4 text-gray-400">${exp.description}</td>
+                    <td class="py-4 text-right font-mono">$${parseFloat(exp.amount).toFixed(2)}</td>
+                `;
+                expenseList.appendChild(row);
+            });
+            totalAmountEl.innerText = `$${total.toFixed(2)}`;
+            localStorage.setItem('sgx_expenses', JSON.stringify(expenses));
+        }
+
+        expenseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newExp = {
+                date: new Date().toLocaleDateString(),
+                category: document.getElementById('exp-cat').value,
+                amount: document.getElementById('exp-amount').value || 0,
+                description: document.getElementById('exp-desc').value,
+                property: document.getElementById('exp-property').value
+            };
+            expenses.push(newExp);
+            updateUI();
+            expenseForm.reset();
+        });
+
+        function clearExpenses() {
+            if(confirm('¿Seguro que quieres borrar todos los registros?')) {
+                expenses = [];
+                updateUI();
+            }
+        }
+
+        // --- 360 VIEWER (Tier 2) ---
+        let scene, camera, renderer, sphere;
+        let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0,
+            lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
+
+        function init360(textureUrl) {
+            const container = document.getElementById('viewer-container');
+            container.innerHTML = ''; // Clear previous
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
+            
+            const geometry = new THREE.SphereGeometry(500, 60, 40);
+            geometry.scale(-1, 1, 1);
+
+            const texture = new THREE.TextureLoader().load(textureUrl);
+            const material = new THREE.MeshBasicMaterial({ map: texture });
+            sphere = new THREE.Mesh(geometry, material);
+            scene.add(sphere);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            container.addEventListener('pointerdown', onPointerDown);
+            container.addEventListener('wheel', onWheel);
+            
+            animate();
+        }
+
+        function onPointerDown(event) {
+            isUserInteracting = true;
+            onPointerDownPointerX = event.clientX;
+            onPointerDownPointerY = event.clientY;
+            onPointerDownLon = lon;
+            onPointerDownLat = lat;
+            document.addEventListener('pointermove', onPointerMove);
+            document.addEventListener('pointerup', onPointerUp);
+        }
+
+        function onPointerMove(event) {
+            if (isUserInteracting === true) {
+                lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
+                lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+            }
+        }
+
+        function onPointerUp() {
+            isUserInteracting = false;
+            document.removeEventListener('pointermove', onPointerMove);
+            document.removeEventListener('pointerup', onPointerUp);
+        }
+
+        function onWheel(event) {
+            camera.fov += event.deltaY * 0.05;
+            camera.fov = Math.max(10, Math.min(100, camera.fov));
+            camera.updateProjectionMatrix();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            update();
+        }
+
+        function update() {
+            lat = Math.max(-85, Math.min(85, lat));
+            phi = THREE.MathUtils.degToRad(90 - lat);
+            theta = THREE.MathUtils.degToRad(lon);
+            camera.target = new THREE.Vector3(500 * Math.sin(phi) * Math.cos(theta), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(theta));
+            camera.lookAt(camera.target);
+            renderer.render(scene, camera);
+        }
+
+        function open360(url) {
+            document.getElementById('modal-360').classList.remove('hidden');
+            setTimeout(() => init360(url), 100);
+        }
+
+        function close360() {
+            document.getElementById('modal-360').classList.add('hidden');
+        }
+
+        // --- BOOT ---
+        updateUI();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
