@@ -2,349 +2,688 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paraíso Real | SGX Transparency Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>SGX | Loctitians Vibe Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sgx: {
+                            blue: '#32527B',
+                            gold: '#FDCC0D',
+                            dark: '#1A1A1A'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        
+        /* SGX TACTICAL UI/UX GUIDE VARIABLES */
         :root {
-            --sgx-blue: #32527B;
-            --sgx-gold: #FDCC0D;
-            --sgx-dark: #0f172a;
+            --sgx-clip: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
         }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--sgx-dark);
-            color: white;
-            overflow-x: hidden;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sgx-border { border-left: 4px solid var(--sgx-gold); }
-        
-        #viewer-container {
-            width: 100%;
-            height: 400px;
-            background: #000;
-            cursor: move;
-            border-radius: 12px;
+            margin: 0;
             overflow: hidden;
+            background-color: #1A1A1A;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* SGX Glassmorphism Panels */
+        .sgx-glass {
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(50, 82, 123, 0.6);
+            clip-path: var(--sgx-clip);
+        }
 
-        input, select, textarea {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: white !important;
+        /* SGX Tactical Button */
+        .sgx-btn {
+            background: rgba(253, 204, 13, 0.1);
+            color: #FDCC0D;
+            border: 1px solid #FDCC0D;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+        .sgx-btn:hover, .sgx-btn:active {
+            background: #FDCC0D;
+            color: #1A1A1A;
+            box-shadow: 0 0 15px rgba(253, 204, 13, 0.5);
+        }
+
+        /* SGX Titles */
+        .sgx-title {
+            font-size: clamp(1.2rem, 4vw, 2.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Scanline Overlay Optimizada */
+        .scanlines {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 25;
+            opacity: 0.5;
+        }
+
+        /* Screen FX */
+        @keyframes damageFlash {
+            0% { background-color: rgba(255, 0, 0, 0.3); mix-blend-mode: screen; }
+            100% { background-color: transparent; mix-blend-mode: normal; }
+        }
+        .flash-red { animation: damageFlash 0.3s ease-out; }
+        @keyframes photoFlash {
+            0% { background-color: #FFFFFF; }
+            100% { background-color: transparent; }
+        }
+        .flash-white { animation: photoFlash 0.6s ease-out; }
+        
+        .corner-cross {
+            position: absolute;
+            width: 15px; height: 15px;
+            border-color: rgba(253, 204, 13, 0.6);
+            z-index: 20;
         }
     </style>
 </head>
-<body>
+<body class="font-orbitron text-white antialiased">
 
-    <nav class="p-6 glass flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-[#FDCC0D] rounded-full flex items-center justify-center text-black font-bold">PR</div>
-            <h1 class="text-xl font-bold tracking-tighter uppercase">Paraíso Real</h1>
+    <script>
+        const originalConsoleError = console.error;
+        const originalConsoleWarn = console.warn;
+        function sgxConsoleFilter(originalFn, ...args) {
+            if (args.length > 0 && typeof args[0] === 'string') {
+                const msg = args[0].toLowerCase();
+                if (msg.includes('xnnpack') || msg.includes('tensorflow') || msg.includes('tflite')) return;
+            }
+            originalFn.apply(console, args);
+        }
+        console.error = (...args) => sgxConsoleFilter(originalConsoleError, ...args);
+        console.warn = (...args) => sgxConsoleFilter(originalConsoleWarn, ...args);
+    </script>
+
+    <main id="app" class="relative w-full h-screen h-[100dvh] overflow-hidden bg-sgx-dark">
+        
+        <div class="corner-cross top-4 left-4 border-t-2 border-l-2"></div>
+        <div class="corner-cross top-4 right-4 border-t-2 border-r-2"></div>
+        <div class="corner-cross bottom-4 left-4 border-b-2 border-l-2"></div>
+        <div class="corner-cross bottom-4 right-4 border-b-2 border-r-2"></div>
+        <div class="scanlines"></div>
+
+        <video id="webcam" class="hidden" autoplay playsinline muted></video>
+
+        <canvas id="renderCanvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+        <div id="fx-overlay" class="absolute inset-0 z-20 pointer-events-none"></div>
+
+        <div id="hud" class="absolute top-0 left-0 w-full h-full pointer-events-none z-30 hidden flex-col justify-between p-6">
+            
+            <div class="w-full flex justify-between items-start pt-2">
+                <div class="flex flex-col">
+                    <span class="text-[10px] text-sgx-gold tracking-widest font-bold">SYS.TRACKING // ACTIVE</span>
+                    <span class="text-[9px] text-sgx-blue tracking-[0.2em] mt-1 drop-shadow">LOCTITIANS PR x SPATIALGINEERS</span>
+                </div>
+                <div class="text-right">
+                    <span id="score-text" class="text-xl md:text-2xl font-black text-sgx-gold drop-shadow-md">0 / 150</span>
+                </div>
+            </div>
+
+            <div class="w-full max-w-md mx-auto mb-8 pointer-events-auto px-4">
+                <div class="sgx-glass p-4">
+                    <div class="flex justify-between text-[10px] text-white tracking-widest mb-3 font-bold">
+                        <span>VIBE INTEGRITY</span>
+                        <span class="text-sgx-gold">[ TARGET: 150 ]</span>
+                    </div>
+                    <div class="w-full h-3 bg-sgx-dark border border-sgx-blue relative overflow-hidden">
+                        <div id="score-bar" class="absolute top-0 left-0 h-full bg-sgx-gold transition-all duration-300 ease-out" style="width: 0%; box-shadow: 0 0 10px #FDCC0D;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-6 text-sm font-medium uppercase tracking-widest">
-            <button onclick="showTab('home')" class="hover:text-[#FDCC0D] transition">Inicio</button>
-            <button onclick="showTab('properties')" class="hover:text-[#FDCC0D] transition">Propiedades</button>
-            <button onclick="showTab('admin')" class="bg-[#FDCC0D] text-black px-4 py-1 rounded shadow-lg hover:scale-105 transition">Admin Dashboard</button>
+
+        <div id="reward-screen" class="absolute inset-0 z-40 hidden flex-col items-center justify-between p-6 opacity-0 transition-opacity duration-700">
+            <div class="w-full mt-6 flex flex-col items-center drop-shadow-lg">
+                <h1 class="sgx-title text-sgx-gold text-center">LOCTITIANS PR</h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="w-6 h-[2px] bg-sgx-blue"></span>
+                    <p class="text-sgx-blue text-[10px] md:text-xs tracking-[0.3em] font-bold drop-shadow">x SPATIALGINEERS</p>
+                    <span class="w-6 h-[2px] bg-sgx-blue"></span>
+                </div>
+                
+                <div class="flex justify-center items-center gap-6 mt-6">
+                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" class="w-16 h-16 object-contain drop-shadow-lg" alt="Loctitians">
+                    <img src="https://static.wixstatic.com/media/fe81a7_68a5da16aefe4e09aee2c6679b885c63~mv2.png" class="w-16 h-16 object-contain drop-shadow-lg" alt="Spatialgineers">
+                </div>
+            </div>
+            
+            <div class="w-full max-w-xs mb-8 flex flex-col gap-4">
+                <button id="capture-btn" class="w-full py-4 text-sm font-bold sgx-btn">
+                    [ 📸 GUARDAR MEMORIA ]
+                </button>
+                <button id="reset-btn" class="w-full py-3 text-xs sgx-btn bg-transparent border-sgx-blue text-sgx-blue hover:text-sgx-dark hover:border-sgx-gold hover:bg-sgx-gold transition-colors">
+                    < REINICIAR SISTEMA >
+                </button>
+            </div>
         </div>
-    </nav>
 
-    <main class="max-w-6xl mx-auto p-8">
-
-        <section id="home" class="tab-content active space-y-12">
-            <div class="grid md:grid-cols-2 gap-12 items-center py-12">
-                <div class="space-y-6">
-                    <h2 class="text-5xl font-bold leading-tight sgx-border pl-6 uppercase">Yamira <br><span class="text-[#FDCC0D]">Paraíso Real</span></h2>
-                    <p class="text-gray-400 text-lg">Realtor® con enfoque estratégico y tecnológico. Transformando la visualización inmobiliaria en experiencias inmersivas que cierran tratos.</p>
-                    <div class="flex gap-4">
-                        <div class="glass p-4 rounded-xl text-center flex-1">
-                            <span class="block text-2xl font-bold text-[#FDCC0D]">15+</span>
-                            <span class="text-xs text-gray-500 uppercase">Años Exp.</span>
-                        </div>
-                        <div class="glass p-4 rounded-xl text-center flex-1">
-                            <span class="block text-2xl font-bold text-[#FDCC0D]">100%</span>
-                            <span class="text-xs text-gray-500 uppercase">Transparencia</span>
-                        </div>
-                    </div>
+        <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-sgx-dark/95 px-4">
+            <div class="sgx-glass p-8 max-w-sm w-full flex flex-col items-center text-center gap-6">
+                <div class="w-24 h-24 bg-transparent flex items-center justify-center p-2 rounded-full border border-sgx-blue shadow-[0_0_20px_rgba(50,82,123,0.4)]">
+                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" id="hero-logo" class="w-16 h-16 object-contain" alt="Loctitians Logo">
                 </div>
-                <div class="h-[400px] bg-gray-800 rounded-3xl overflow-hidden relative group">
-                    <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80" class="w-full h-full object-cover opacity-60 group-hover:scale-110 transition duration-700" alt="Interior">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <button onclick="showTab('properties')" class="bg-white/10 backdrop-blur-xl p-6 rounded-full border border-white/20 hover:scale-110 transition">
-                            <i data-lucide="eye" class="w-12 h-12 text-[#FDCC0D]"></i>
-                        </button>
-                    </div>
+                
+                <div>
+                    <h1 class="sgx-title text-white">Vibe<br><span class="text-sgx-gold">Tracker</span></h1>
+                    <p class="text-[10px] text-sgx-blue tracking-[0.3em] mt-2 font-bold">SGX.SPARK // MODULE</p>
                 </div>
+                
+                <div class="text-[11px] text-gray-200 font-mono space-y-3 bg-[#1A1A1A] p-4 border border-sgx-blue/50 w-full text-left">
+                    <p class="text-sgx-gold font-bold text-center mb-2">CALIBRACIÓN ESPACIAL</p>
+                    <p>› Mueve tu cabeza para navegar el escudo.</p>
+                    <p>› Atrapa: <span class="text-base align-middle">💧✨🐚🌿</span> (+ Vibes)</p>
+                    <p>› Evita: <span class="text-base align-middle">✂️🦠🕯️</span> (- Daño)</p>
+                </div>
+                
+                <button id="boot-btn" class="w-full py-4 text-sm font-bold sgx-btn mt-2">
+                    INICIAR ENLACE
+                </button>
+                <p id="loading-text" class="text-sgx-gold text-[10px] font-mono tracking-widest hidden animate-pulse">CARGANDO MATRIZ NEURONAL...</p>
             </div>
-        </section>
-
-        <section id="properties" class="tab-content space-y-8">
-            <div class="flex justify-between items-end">
-                <h2 class="text-3xl font-bold uppercase">Listado Inmersivo</h2>
-                <span class="text-sm text-gray-500">Filtrando prospectos mediante SGX.Showcase</span>
-            </div>
-
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="glass p-4 rounded-2xl space-y-4">
-                    <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" class="rounded-xl w-full h-48 object-cover" alt="Villa">
-                    <div>
-                        <h3 class="font-bold text-lg">Villa del Sol, Isabela</h3>
-                        <p class="text-sm text-gray-400">$850,000 | 4 Hab | 3 Baños</p>
-                    </div>
-                    <button onclick="open360('https://threejs.org/examples/textures/2294472375_b9a84c0c3a_k.jpg')" class="w-full py-3 bg-[#32527B] rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-blue-600 transition">
-                        <i data-lucide="rotate-3d"></i> VER EN 360º
-                    </button>
-                </div>
-            </div>
-
-            <div id="modal-360" class="hidden fixed inset-0 z-[100] bg-black/90 p-4 md:p-12">
-                <div class="max-w-5xl mx-auto h-full flex flex-col space-y-4">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-xl font-bold">Experiencia 360º | <span class="text-[#FDCC0D]">Motor WebGL SGX</span></h3>
-                        <button onclick="close360()" class="p-2 hover:bg-white/10 rounded-full transition"><i data-lucide="x"></i></button>
-                    </div>
-                    <div id="viewer-container"></div>
-                    <p class="text-center text-xs text-gray-500 italic">Usa el mouse o toca para explorar el espacio</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="admin" class="tab-content space-y-8">
-            <div class="grid md:grid-cols-4 gap-6">
-                <div class="md:col-span-1 glass p-6 rounded-2xl h-fit space-y-6">
-                    <h3 class="font-bold text-gray-500 uppercase text-xs">Gestión de Esfuerzo</h3>
-                    <nav class="space-y-2">
-                        <button class="w-full text-left p-3 rounded-lg bg-[#FDCC0D]/10 text-[#FDCC0D] border border-[#FDCC0D]/20">Effort Tracker</button>
-                        <button class="w-full text-left p-3 rounded-lg hover:bg-white/5 transition">Propiedades</button>
-                        <button class="w-full text-left p-3 rounded-lg hover:bg-white/5 transition">Leads</button>
-                    </nav>
-                </div>
-
-                <div class="md:col-span-3 space-y-6">
-                    <div class="glass p-8 rounded-3xl space-y-6">
-                        <h2 class="text-2xl font-bold uppercase">Log de Gastos Operativos</h2>
-                        <form id="expense-form" class="grid grid-cols-2 gap-4">
-                            <div class="col-span-2">
-                                <label class="text-xs uppercase text-gray-500 mb-1 block">Propiedad</label>
-                                <select id="exp-property" class="w-full p-3 rounded-lg outline-none">
-                                    <option>Villa del Sol, Isabela</option>
-                                    <option>Condo Marazul, SJ</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs uppercase text-gray-500 mb-1 block">Categoría</label>
-                                <select id="exp-cat" class="w-full p-3 rounded-lg outline-none">
-                                    <option>Marketing / Ads</option>
-                                    <option>Mantenimiento</option>
-                                    <option>Staging</option>
-                                    <option>Transporte</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-xs uppercase text-gray-500 mb-1 block">Monto ($)</label>
-                                <input id="exp-amount" type="number" step="0.01" class="w-full p-3 rounded-lg outline-none" placeholder="0.00">
-                            </div>
-                            <div class="col-span-2">
-                                <label class="text-xs uppercase text-gray-500 mb-1 block">Descripción del Esfuerzo</label>
-                                <textarea id="exp-desc" class="w-full p-3 rounded-lg outline-none h-24" placeholder="Detalla el trabajo realizado..."></textarea>
-                            </div>
-                            <button type="submit" class="col-span-2 bg-[#FDCC0D] text-black py-4 rounded-xl font-bold hover:bg-yellow-500 transition">REGISTRAR ESFUERZO</button>
-                        </form>
-                    </div>
-
-                    <div class="glass p-8 rounded-3xl overflow-hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold uppercase">Reporte de Transparencia Real-Time</h3>
-                            <button onclick="clearExpenses()" class="text-xs text-red-400 hover:underline">Resetear Logs</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left">
-                                <thead>
-                                    <tr class="text-xs text-gray-500 border-b border-white/10 uppercase">
-                                        <th class="pb-4">Fecha</th>
-                                        <th class="pb-4">Categoría</th>
-                                        <th class="pb-4">Descripción</th>
-                                        <th class="pb-4 text-right">Inversión</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="expense-list" class="text-sm">
-                                    </tbody>
-                                <tfoot>
-                                    <tr class="font-bold border-t border-white/20">
-                                        <td colspan="3" class="pt-4">TOTAL INVERTIDO EN LA VENTA</td>
-                                        <td id="total-amount" class="pt-4 text-right text-[#FDCC0D] text-lg">$0.00</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
 
     </main>
 
-    <footer class="p-12 text-center text-xs text-gray-600 uppercase tracking-widest space-y-2">
-        <p>Propulsado por la arquitectura SGX de Spatialgineers</p>
-        <p>© 2026 Paraíso Real Bienes Raíces</p>
-    </footer>
+    <script type="module">
+        import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
-    <script>
-        // --- NAVEGACIÓN ---
-        function showTab(id) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            window.scrollTo(0,0);
-        }
-
-        // --- DASHBOARD LOGIC (Tier 3) ---
-        const expenseForm = document.getElementById('expense-form');
-        const expenseList = document.getElementById('expense-list');
-        const totalAmountEl = document.getElementById('total-amount');
-
-        let expenses = JSON.parse(localStorage.getItem('sgx_expenses')) || [];
-
-        function updateUI() {
-            expenseList.innerHTML = '';
-            let total = 0;
-            expenses.forEach((exp, index) => {
-                total += parseFloat(exp.amount);
-                const row = document.createElement('tr');
-                row.className = "border-b border-white/5 hover:bg-white/5";
-                row.innerHTML = `
-                    <td class="py-4 text-gray-500">${exp.date}</td>
-                    <td class="py-4 font-medium">${exp.category}</td>
-                    <td class="py-4 text-gray-400">${exp.description}</td>
-                    <td class="py-4 text-right font-mono">$${parseFloat(exp.amount).toFixed(2)}</td>
-                `;
-                expenseList.appendChild(row);
+        // ==========================================
+        // PRELOAD DE ASSETS GRÁFICOS (SGX x LOCTITIANS)
+        // ==========================================
+        const loadImage = (src) => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.onload = () => resolve(img);
+                img.onerror = () => { console.error("SGX Asset Load Error:", src); resolve(img); };
+                img.src = src;
             });
-            totalAmountEl.innerText = `$${total.toFixed(2)}`;
-            localStorage.setItem('sgx_expenses', JSON.stringify(expenses));
+        };
+
+        let IMG_LOCTITIANS, IMG_SGX;
+        
+        async function loadBrandAssets() {
+            IMG_LOCTITIANS = await loadImage("https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png");
+            IMG_SGX = await loadImage("https://static.wixstatic.com/media/fe81a7_68a5da16aefe4e09aee2c6679b885c63~mv2.png");
         }
+        loadBrandAssets();
 
-        expenseForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const newExp = {
-                date: new Date().toLocaleDateString(),
-                category: document.getElementById('exp-cat').value,
-                amount: document.getElementById('exp-amount').value || 0,
-                description: document.getElementById('exp-desc').value,
-                property: document.getElementById('exp-property').value
-            };
-            expenses.push(newExp);
-            updateUI();
-            expenseForm.reset();
-        });
+        // ==========================================
+        // ARCHITECTURE CORE: VARIABLES
+        // ==========================================
+        const DOM = {
+            video: document.getElementById('webcam'),
+            canvas: document.getElementById('renderCanvas'),
+            startScreen: document.getElementById('start-screen'),
+            bootBtn: document.getElementById('boot-btn'),
+            loadingText: document.getElementById('loading-text'),
+            hud: document.getElementById('hud'),
+            scoreBar: document.getElementById('score-bar'),
+            scoreText: document.getElementById('score-text'),
+            fxOverlay: document.getElementById('fx-overlay'),
+            rewardScreen: document.getElementById('reward-screen'),
+            captureBtn: document.getElementById('capture-btn'),
+            resetBtn: document.getElementById('reset-btn')
+        };
 
-        function clearExpenses() {
-            if(confirm('¿Seguro que quieres borrar todos los registros?')) {
-                expenses = [];
-                updateUI();
+        const ctx = DOM.canvas.getContext('2d', { alpha: false }); 
+        let faceLandmarker = null;
+        let webcamRunning = false;
+        let lastVideoTime = -1;
+        let reqAnimFrame = null;
+        let lastFrameTime = performance.now(); // Base de Delta Time
+
+        const STATE = {
+            phase: 'IDLE', 
+            score: 0,
+            maxScore: 150, 
+            playerX: 0,
+            playerY: 0,
+            landmarks: null
+        };
+
+        const ENTITIES = {
+            good: ['💧', '✨', '🐚', '🌿'], 
+            bad: ['✂️', '🦠', '🕯️']        
+        };
+
+        const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif';
+
+        let activeItems = [];
+        let particles = [];
+        let floatingTexts = [];
+        let spawnTimer = 0;
+        
+        let devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+
+        // ==========================================
+        // INITIALIZATION & MEDIAPIPE
+        // ==========================================
+        async function initializeSystem() {
+            DOM.bootBtn.classList.add('hidden');
+            DOM.loadingText.classList.remove('hidden');
+
+            try {
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+                );
+                
+                faceLandmarker = await FaceLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+                        delegate: "GPU"
+                    },
+                    outputFaceBlendshapes: false,
+                    runningMode: "VIDEO",
+                    numFaces: 1
+                });
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                
+                DOM.video.srcObject = stream;
+                
+                DOM.video.addEventListener("loadeddata", () => {
+                    DOM.video.play();
+                    resizeCanvas();
+                    startGame();
+                });
+
+            } catch (error) {
+                console.error("SGX INIT ERROR:", error);
+                alert("Fallo de Telemetría: Se requiere acceso a la cámara para iniciar el escaneo espacial.");
+                DOM.bootBtn.classList.remove('hidden');
+                DOM.loadingText.classList.add('hidden');
             }
         }
 
-        // --- 360 VIEWER (Tier 2) ---
-        let scene, camera, renderer, sphere;
-        let isUserInteracting = false, onPointerDownPointerX = 0, onPointerDownPointerY = 0,
-            lon = 0, onPointerDownLon = 0, lat = 0, onPointerDownLat = 0, phi = 0, theta = 0;
-
-        function init360(textureUrl) {
-            const container = document.getElementById('viewer-container');
-            container.innerHTML = ''; // Clear previous
-
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 1, 1100);
-            
-            const geometry = new THREE.SphereGeometry(500, 60, 40);
-            geometry.scale(-1, 1, 1);
-
-            const texture = new THREE.TextureLoader().load(textureUrl);
-            const material = new THREE.MeshBasicMaterial({ map: texture });
-            sphere = new THREE.Mesh(geometry, material);
-            scene.add(sphere);
-
-            renderer = new THREE.WebGLRenderer();
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            container.appendChild(renderer.domElement);
-
-            container.addEventListener('pointerdown', onPointerDown);
-            container.addEventListener('wheel', onWheel);
-            
-            animate();
+        function resizeCanvas() {
+            DOM.canvas.width = window.innerWidth * devicePixelRatio;
+            DOM.canvas.height = window.innerHeight * devicePixelRatio;
+            STATE.playerY = DOM.canvas.height * 0.75;
+            STATE.playerX = DOM.canvas.width / 2; 
         }
+        window.addEventListener('resize', resizeCanvas);
 
-        function onPointerDown(event) {
-            isUserInteracting = true;
-            onPointerDownPointerX = event.clientX;
-            onPointerDownPointerY = event.clientY;
-            onPointerDownLon = lon;
-            onPointerDownLat = lat;
-            document.addEventListener('pointermove', onPointerMove);
-            document.addEventListener('pointerup', onPointerUp);
-        }
-
-        function onPointerMove(event) {
-            if (isUserInteracting === true) {
-                lon = (onPointerDownPointerX - event.clientX) * 0.1 + onPointerDownLon;
-                lat = (event.clientY - onPointerDownPointerY) * 0.1 + onPointerDownLat;
+        // ==========================================
+        // GAME FLOW
+        // ==========================================
+        function startGame() {
+            DOM.startScreen.classList.add('hidden');
+            DOM.rewardScreen.classList.add('hidden');
+            DOM.rewardScreen.classList.remove('opacity-100');
+            DOM.rewardScreen.classList.add('opacity-0');
+            
+            DOM.hud.classList.remove('hidden');
+            DOM.hud.classList.add('flex');
+            
+            STATE.phase = 'PLAYING';
+            STATE.score = 0;
+            activeItems = [];
+            particles = [];
+            floatingTexts = [];
+            spawnTimer = 0;
+            updateHUD();
+            
+            if(!webcamRunning) {
+                webcamRunning = true;
+                lastFrameTime = performance.now();
+                tick(lastFrameTime);
             }
         }
 
-        function onPointerUp() {
-            isUserInteracting = false;
-            document.removeEventListener('pointermove', onPointerMove);
-            document.removeEventListener('pointerup', onPointerUp);
+        function triggerRewardPhase() {
+            STATE.phase = 'REWARD';
+            DOM.hud.classList.add('hidden');
+            DOM.hud.classList.remove('flex');
+            
+            DOM.rewardScreen.classList.remove('hidden');
+            setTimeout(() => {
+                DOM.rewardScreen.classList.remove('opacity-0');
+                DOM.rewardScreen.classList.add('opacity-100');
+            }, 100);
+            activeItems = []; 
         }
 
-        function onWheel(event) {
-            camera.fov += event.deltaY * 0.05;
-            camera.fov = Math.max(10, Math.min(100, camera.fov));
-            camera.updateProjectionMatrix();
+        function updateHUD() {
+            STATE.score = Math.max(0, Math.min(STATE.score, STATE.maxScore));
+            const pct = Math.floor((STATE.score / STATE.maxScore) * 100);
+            DOM.scoreBar.style.width = `${pct}%`;
+            DOM.scoreText.innerText = `${STATE.score} / ${STATE.maxScore}`;
         }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            update();
+        function triggerScreenFX(type) {
+            DOM.fxOverlay.className = `absolute inset-0 z-20 pointer-events-none flash-${type}`;
+            void DOM.fxOverlay.offsetWidth; 
         }
 
-        function update() {
-            lat = Math.max(-85, Math.min(85, lat));
-            phi = THREE.MathUtils.degToRad(90 - lat);
-            theta = THREE.MathUtils.degToRad(lon);
-            camera.target = new THREE.Vector3(500 * Math.sin(phi) * Math.cos(theta), 500 * Math.cos(phi), 500 * Math.sin(phi) * Math.sin(theta));
-            camera.lookAt(camera.target);
-            renderer.render(scene, camera);
+        // ==========================================
+        // RENDER PIPELINE & DELTA TIME
+        // ==========================================
+        function tick(currentTime) {
+            if (!webcamRunning) return;
+
+            // Calculadora de Delta Time para estabilización matemática
+            let dt = (currentTime - lastFrameTime) / 16.666; 
+            if (dt > 3) dt = 3; // Límite de seguridad para evitar saltos bruscos si hay lag
+            lastFrameTime = currentTime;
+
+            if (DOM.video.currentTime !== lastVideoTime) {
+                lastVideoTime = DOM.video.currentTime;
+                const results = faceLandmarker.detectForVideo(DOM.video, performance.now());
+                if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+                    STATE.landmarks = results.faceLandmarks[0];
+                    STATE.playerX = (1 - STATE.landmarks[1].x) * DOM.canvas.width;
+                    const targetY = (STATE.landmarks[1].y * DOM.canvas.height) + (DOM.canvas.height * 0.15);
+                    STATE.playerY += (targetY - STATE.playerY) * 0.3; 
+                }
+            }
+
+            // Draw Video Background
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.translate(-DOM.canvas.width, 0);
+            
+            const vRatio = DOM.video.videoWidth / DOM.video.videoHeight;
+            const cRatio = DOM.canvas.width / DOM.canvas.height;
+            let drawW, drawH, drawX, drawY;
+
+            if (cRatio > vRatio) {
+                drawW = DOM.canvas.width;
+                drawH = drawW / vRatio;
+                drawX = 0;
+                drawY = (DOM.canvas.height - drawH) / 2;
+            } else {
+                drawH = DOM.canvas.height;
+                drawW = drawH * vRatio;
+                drawX = (DOM.canvas.width - drawW) / 2;
+                drawY = 0;
+            }
+            ctx.drawImage(DOM.video, drawX, drawY, drawW, drawH);
+            ctx.restore();
+
+            if (STATE.phase === 'PLAYING') {
+                runGameLogic(dt);
+            } else if (STATE.phase === 'REWARD') {
+                runRewardLogic();
+            }
+
+            renderJuice(dt);
+            reqAnimFrame = requestAnimationFrame(tick);
         }
 
-        function open360(url) {
-            document.getElementById('modal-360').classList.remove('hidden');
-            setTimeout(() => init360(url), 100);
+        // ==========================================
+        // GAME LOGIC (DELTA OPTIMIZED)
+        // ==========================================
+        function runGameLogic(dt) {
+            spawnTimer += dt;
+            
+            if (spawnTimer >= 45) { // Spawn rate estable independiente del framerate
+                spawnTimer = 0;
+                const isGood = Math.random() > 0.35; 
+                const arr = isGood ? ENTITIES.good : ENTITIES.bad;
+                const emoji = arr[Math.floor(Math.random() * arr.length)];
+                
+                const padding = 60 * devicePixelRatio;
+                const sx = padding + Math.random() * (DOM.canvas.width - padding * 2);
+                
+                activeItems.push({
+                    x: sx,
+                    y: -100,
+                    speed: (DOM.canvas.height * 0.006) + Math.random() * (DOM.canvas.height * 0.004), 
+                    type: isGood ? 'good' : 'bad',
+                    emoji: emoji,
+                    radius: 40 * devicePixelRatio,
+                    rotation: Math.random() * Math.PI,
+                    rotSpeed: (Math.random() - 0.5) * 0.06
+                });
+            }
+
+            const playerHitboxRadius = 65 * devicePixelRatio;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            for (let i = activeItems.length - 1; i >= 0; i--) {
+                let item = activeItems[i];
+                item.y += item.speed * dt; // Física desacoplada
+                item.rotation += item.rotSpeed * dt;
+
+                ctx.save();
+                ctx.translate(item.x, item.y);
+                ctx.rotate(item.rotation);
+                ctx.fillStyle = '#FFFFFF'; 
+                ctx.font = `${65 * devicePixelRatio}px ${EMOJI_FONT}`;
+                ctx.fillText(item.emoji, 0, 0);
+                ctx.restore();
+
+                const dist = Math.hypot(STATE.playerX - item.x, STATE.playerY - item.y);
+                
+                if (dist < playerHitboxRadius + item.radius) {
+                    if (item.type === 'good') {
+                        STATE.score += 15;
+                        createParticles(item.x, item.y, '#FDCC0D', item.emoji);
+                        createFloatingText('+15', item.x, item.y, '#FDCC0D');
+                    } else {
+                        STATE.score -= 20;
+                        triggerScreenFX('red');
+                        createParticles(item.x, item.y, '#FF0000', '✖');
+                        createFloatingText('-20', item.x, item.y, '#FF0000');
+                    }
+                    updateHUD();
+                    activeItems.splice(i, 1);
+                    
+                    if (STATE.score >= STATE.maxScore) {
+                        triggerRewardPhase();
+                        return; 
+                    }
+                    continue;
+                }
+
+                if (item.y > DOM.canvas.height + 100) activeItems.splice(i, 1);
+            }
+
+            // Draw Avatar
+            if (STATE.landmarks && IMG_LOCTITIANS && IMG_LOCTITIANS.complete) {
+                const logoSize = 140 * devicePixelRatio; 
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.translate(STATE.playerX, STATE.playerY);
+                const tilt = (STATE.playerX - (DOM.canvas.width/2)) * 0.0005;
+                ctx.rotate(tilt);
+                
+                const glow = ctx.createRadialGradient(0,0, logoSize*0.2, 0,0, logoSize*0.6);
+                glow.addColorStop(0, 'rgba(253, 204, 13, 0.4)');
+                glow.addColorStop(1, 'rgba(253, 204, 13, 0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath(); ctx.arc(0,0, logoSize*0.6, 0, Math.PI*2); ctx.fill();
+
+                ctx.drawImage(IMG_LOCTITIANS, -logoSize/2, -logoSize/2, logoSize, logoSize);
+                ctx.restore();
+            }
         }
 
-        function close360() {
-            document.getElementById('modal-360').classList.add('hidden');
+        // ==========================================
+        // REWARD LOGIC
+        // ==========================================
+        function runRewardLogic() {
+            if (STATE.landmarks) {
+                const headTopY = STATE.landmarks[10].y * DOM.canvas.height;
+                const headTopX = (1 - STATE.landmarks[10].x) * DOM.canvas.width;
+                
+                const crownRadius = 130 * devicePixelRatio;
+                const time = performance.now() / 1000;
+                
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                const gradient = ctx.createRadialGradient(headTopX, headTopY - (60*devicePixelRatio), 0, headTopX, headTopY - (60*devicePixelRatio), 250 * devicePixelRatio);
+                gradient.addColorStop(0, 'rgba(253, 204, 13, 0.6)'); 
+                gradient.addColorStop(0.5, 'rgba(50, 82, 123, 0.4)'); 
+                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(headTopX, headTopY - (60*devicePixelRatio), 250 * devicePixelRatio, 0, Math.PI * 2);
+                ctx.fill();
+
+                const crownItems = ['✨', '🐚', '✨', '🐚', '✨'];
+                for (let i = 0; i < crownItems.length; i++) {
+                    const angle = Math.PI + (Math.PI / (crownItems.length - 1)) * i; 
+                    const offset = Math.sin(time * 2 + i) * (10 * devicePixelRatio); 
+                    
+                    const itemX = headTopX + Math.cos(angle) * crownRadius;
+                    const itemY = headTopY + Math.sin(angle) * (crownRadius * 0.5) + offset - (80 * devicePixelRatio); 
+                    
+                    ctx.save();
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = `${35 * devicePixelRatio}px ${EMOJI_FONT}`;
+                    ctx.fillText(crownItems[i], itemX, itemY);
+                    ctx.restore();
+                }
+            }
         }
 
-        // --- BOOT ---
-        updateUI();
-        lucide.createIcons();
+        // ==========================================
+        // JUICE & FX (DELTA OPTIMIZED)
+        // ==========================================
+        function createParticles(x, y, color, emoji) {
+            // Límite de hardware para no sobrecargar el stack
+            if (particles.length > 50) return; 
+
+            for (let i = 0; i < 3; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 12 * devicePixelRatio,
+                    vy: (Math.random() - 0.5) * 12 * devicePixelRatio,
+                    life: 1.0,
+                    emoji: emoji,
+                    size: (25 + Math.random() * 15) * devicePixelRatio
+                });
+            }
+        }
+
+        function createFloatingText(txt, x, y, color) {
+            floatingTexts.push({ txt: txt, x: x, y: y, life: 1.0, color: color });
+        }
+
+        function renderJuice(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx * dt; // Escala por Delta Time
+                p.y += p.vy * dt; 
+                p.life -= 0.05 * dt;
+                
+                if (p.life <= 0) particles.splice(i, 1);
+                else {
+                    ctx.save(); ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#FFFFFF';
+                    ctx.font = `${p.size}px ${EMOJI_FONT}`; ctx.fillText(p.emoji, p.x, p.y); ctx.restore();
+                }
+            }
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                let ft = floatingTexts[i];
+                ft.y -= (3 * devicePixelRatio) * dt; 
+                ft.life -= 0.04 * dt;
+                
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+                else {
+                    ctx.save(); ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color;
+                    ctx.font = `900 ${28 * devicePixelRatio}px 'Orbitron', sans-serif`;
+                    ctx.lineWidth = 4 * devicePixelRatio; ctx.strokeStyle = '#1A1A1A';
+                    ctx.strokeText(ft.txt, ft.x, ft.y); ctx.fillText(ft.txt, ft.x, ft.y);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // ==========================================
+        // SNAPSHOT EXPORT
+        // ==========================================
+        function takeSnapshot() {
+            triggerScreenFX('white'); 
+            cancelAnimationFrame(reqAnimFrame);
+
+            ctx.save();
+            const w = DOM.canvas.width;
+            const h = DOM.canvas.height;
+            
+            ctx.lineWidth = 4 * devicePixelRatio;
+            ctx.strokeStyle = 'rgba(253, 204, 13, 0.4)';
+            ctx.strokeRect(30 * devicePixelRatio, 30 * devicePixelRatio, w - 60 * devicePixelRatio, h - 60 * devicePixelRatio);
+            
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = `900 ${24*devicePixelRatio}px 'Orbitron', sans-serif`;
+            ctx.lineWidth = 5 * devicePixelRatio;
+            ctx.strokeStyle = '#1A1A1A';
+            ctx.strokeText("LOCTITIANS PR", w/2, 70*devicePixelRatio);
+            ctx.fillStyle = '#FDCC0D';
+            ctx.fillText("LOCTITIANS PR", w/2, 70*devicePixelRatio);
+            
+            ctx.font = `700 ${12*devicePixelRatio}px 'Orbitron', sans-serif`;
+            ctx.letterSpacing = "4px";
+            ctx.strokeText("x SPATIALGINEERS", w/2, 100*devicePixelRatio);
+            ctx.fillStyle = '#32527B';
+            ctx.fillText("x SPATIALGINEERS", w/2, 100*devicePixelRatio);
+
+            if (IMG_LOCTITIANS && IMG_LOCTITIANS.complete && IMG_SGX && IMG_SGX.complete) {
+                const sLogo = 80 * devicePixelRatio;
+                const bottomPadding = 45 * devicePixelRatio;
+                const gap = 40 * devicePixelRatio;
+                const totalW = (sLogo * 2) + gap; 
+                const startX = w/2 - totalW/2;
+                
+                ctx.globalCompositeOperation = 'source-over'; 
+                ctx.drawImage(IMG_LOCTITIANS, startX, h - bottomPadding - sLogo, sLogo, sLogo);
+                ctx.drawImage(IMG_SGX, startX + sLogo + gap, h - bottomPadding - sLogo, sLogo, sLogo);
+            }
+
+            ctx.restore();
+
+            try {
+                const dataURL = DOM.canvas.toDataURL('image/png', 1.0);
+                const link = document.createElement('a');
+                link.download = `SGX_LOCTITIANS_SCAN_${Date.now()}.png`;
+                link.href = dataURL;
+                link.click();
+            } catch (err) {
+                console.error("No se pudo exportar (Error de Seguridad CORS):", err);
+                alert("Protección del navegador detectada. Sácale screenshot directamente a esta obra de arte.");
+            }
+
+            lastFrameTime = performance.now();
+            reqAnimFrame = requestAnimationFrame(tick);
+        }
+
+        DOM.bootBtn.addEventListener('click', initializeSystem);
+        DOM.captureBtn.addEventListener('click', takeSnapshot);
+        DOM.resetBtn.addEventListener('click', startGame);
+
     </script>
 </body>
 </html>
