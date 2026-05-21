@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,7 +15,9 @@
                         sgx: {
                             blue: '#32527B',
                             gold: '#FDCC0D',
-                            dark: '#1A1A1A'
+                            dark: '#1A1A1A',
+                            cyan: '#00FFFF',
+                            orange: '#FFAA00'
                         }
                     },
                     fontFamily: {
@@ -28,6 +31,7 @@
         /* SGX TACTICAL UI/UX GUIDE VARIABLES */
         :root {
             --sgx-clip: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+            --sgx-clip-reverse: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
         }
         body {
             margin: 0;
@@ -40,10 +44,10 @@
 
         /* SGX Glassmorphism Panels */
         .sgx-glass {
-            background: rgba(26, 26, 26, 0.8);
+            background: rgba(26, 26, 26, 0.7);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(50, 82, 123, 0.6);
+            border: 1px solid rgba(0, 255, 255, 0.3);
             clip-path: var(--sgx-clip);
         }
 
@@ -76,7 +80,7 @@
         .scanlines {
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.05) 50%, rgba(0,0,0,0.05));
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.04) 50%, rgba(0,0,0,0.04));
             background-size: 100% 4px;
             pointer-events: none;
             z-index: 25;
@@ -98,7 +102,7 @@
         .corner-cross {
             position: absolute;
             width: 15px; height: 15px;
-            border-color: rgba(253, 204, 13, 0.6);
+            border-color: rgba(0, 255, 255, 0.6);
             z-index: 20;
         }
     </style>
@@ -108,6 +112,8 @@
     <script>
         const originalConsoleError = console.error;
         const originalConsoleWarn = console.warn;
+        const originalConsoleInfo = console.info;
+        const originalConsoleLog = console.log;
         function sgxConsoleFilter(originalFn, ...args) {
             if (args.length > 0 && typeof args[0] === 'string') {
                 const msg = args[0].toLowerCase();
@@ -117,6 +123,8 @@
         }
         console.error = (...args) => sgxConsoleFilter(originalConsoleError, ...args);
         console.warn = (...args) => sgxConsoleFilter(originalConsoleWarn, ...args);
+        console.info = (...args) => sgxConsoleFilter(originalConsoleInfo, ...args);
+        console.log = (...args) => sgxConsoleFilter(originalConsoleLog, ...args);
     </script>
 
     <main id="app" class="relative w-full h-screen h-[100dvh] overflow-hidden bg-sgx-dark">
@@ -136,47 +144,43 @@
             
             <div class="w-full flex justify-between items-start pt-2">
                 <div class="flex flex-col">
-                    <span class="text-[10px] text-sgx-gold tracking-widest font-bold">SYS.TRACKING // ACTIVE</span>
-                    <span class="text-[9px] text-sgx-blue tracking-[0.2em] mt-1 drop-shadow">LOCTITIANS PR x SPATIALGINEERS</span>
+                    <span class="text-[10px] text-sgx-cyan tracking-widest font-bold">SYS.TRACKING // ACTIVE</span>
+                    <span class="text-[9px] text-sgx-gold tracking-[0.2em] mt-1">LOCTITIANS PR x SPATIALGINEERS</span>
                 </div>
                 <div class="text-right">
-                    <span id="score-text" class="text-xl md:text-2xl font-black text-sgx-gold drop-shadow-md">0 / 150</span>
+                    <span id="score-text" class="text-xl md:text-2xl font-black text-sgx-gold drop-shadow-md">0%</span>
                 </div>
             </div>
 
             <div class="w-full max-w-md mx-auto mb-8 pointer-events-auto px-4">
                 <div class="sgx-glass p-4">
-                    <div class="flex justify-between text-[10px] text-white tracking-widest mb-3 font-bold">
+                    <div class="flex justify-between text-[10px] text-sgx-cyan tracking-widest mb-3 font-bold">
                         <span>VIBE INTEGRITY</span>
-                        <span class="text-sgx-gold">[ TARGET: 150 ]</span>
+                        <span>[ TARGET: 350 ]</span>
                     </div>
-                    <div class="w-full h-3 bg-sgx-dark border border-sgx-blue relative overflow-hidden">
-                        <div id="score-bar" class="absolute top-0 left-0 h-full bg-sgx-gold transition-all duration-300 ease-out" style="width: 0%; box-shadow: 0 0 10px #FDCC0D;"></div>
+                    <div class="w-full h-3 bg-sgx-dark border border-sgx-cyan/50 relative overflow-hidden">
+                        <div id="score-bar" class="absolute top-0 left-0 h-full bg-sgx-cyan transition-all duration-300 ease-out" style="width: 0%; box-shadow: 0 0 10px #00FFFF;"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="reward-screen" class="absolute inset-0 z-40 hidden flex-col items-center justify-between p-6 opacity-0 transition-opacity duration-700">
-            <div class="w-full mt-6 flex flex-col items-center drop-shadow-lg">
+        <div id="reward-screen" class="absolute inset-0 z-40 hidden opacity-0 transition-opacity duration-700 pointer-events-none">
+            
+            <div class="absolute top-12 left-1/2 -translate-x-1/2 w-full max-w-sm flex flex-col items-center drop-shadow-lg pointer-events-auto">
                 <h1 class="sgx-title text-sgx-gold text-center">LOCTITIANS PR</h1>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="w-6 h-[2px] bg-sgx-blue"></span>
-                    <p class="text-sgx-blue text-[10px] md:text-xs tracking-[0.3em] font-bold drop-shadow">x SPATIALGINEERS</p>
-                    <span class="w-6 h-[2px] bg-sgx-blue"></span>
-                </div>
-                
-                <div class="flex justify-center items-center gap-6 mt-6">
-                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" class="w-16 h-16 object-contain drop-shadow-lg" alt="Loctitians">
-                    <img src="https://static.wixstatic.com/media/fe81a7_68a5da16aefe4e09aee2c6679b885c63~mv2.png" class="w-16 h-16 object-contain drop-shadow-lg" alt="Spatialgineers">
+                    <span class="w-6 h-[2px] bg-sgx-cyan"></span>
+                    <p class="text-sgx-cyan text-[10px] md:text-xs tracking-[0.3em] font-bold">x SPATIALGINEERS</p>
+                    <span class="w-6 h-[2px] bg-sgx-cyan"></span>
                 </div>
             </div>
             
-            <div class="w-full max-w-xs mb-8 flex flex-col gap-4">
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-xs flex flex-col gap-4 pointer-events-auto px-4">
                 <button id="capture-btn" class="w-full py-4 text-sm font-bold sgx-btn">
                     [ 📸 GUARDAR MEMORIA ]
                 </button>
-                <button id="reset-btn" class="w-full py-3 text-xs sgx-btn bg-transparent border-sgx-blue text-sgx-blue hover:text-sgx-dark hover:border-sgx-gold hover:bg-sgx-gold transition-colors">
+                <button id="reset-btn" class="w-full py-3 text-xs sgx-btn border-sgx-cyan/50 text-sgx-cyan bg-transparent hover:bg-sgx-cyan/10" style="color: #00FFFF;">
                     < REINICIAR SISTEMA >
                 </button>
             </div>
@@ -184,16 +188,16 @@
 
         <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-sgx-dark/95 px-4">
             <div class="sgx-glass p-8 max-w-sm w-full flex flex-col items-center text-center gap-6">
-                <div class="w-24 h-24 bg-transparent flex items-center justify-center p-2 rounded-full border border-sgx-blue shadow-[0_0_20px_rgba(50,82,123,0.4)]">
-                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" id="hero-logo" class="w-16 h-16 object-contain" alt="Loctitians Logo">
+                <div class="w-20 h-20 bg-sgx-blue/20 flex items-center justify-center p-2 rounded-full border border-sgx-cyan/50 shadow-[0_0_20px_rgba(0,255,255,0.2)]">
+                    <img src="https://static.wixstatic.com/media/fe81a7_45b592ed09cb4d749ab74715c8bb1a85~mv2.png" id="hero-logo" class="w-14 h-14 object-contain" alt="Loctitians Logo">
                 </div>
                 
                 <div>
                     <h1 class="sgx-title text-white">Vibe<br><span class="text-sgx-gold">Tracker</span></h1>
-                    <p class="text-[10px] text-sgx-blue tracking-[0.3em] mt-2 font-bold">SGX.SPARK // MODULE</p>
+                    <p class="text-[10px] text-sgx-cyan tracking-[0.3em] mt-2 font-bold">SGX.SPARK // MODULE</p>
                 </div>
                 
-                <div class="text-[11px] text-gray-200 font-mono space-y-3 bg-[#1A1A1A] p-4 border border-sgx-blue/50 w-full text-left">
+                <div class="text-[11px] text-gray-200 font-mono space-y-3 bg-[#1A1A1A] p-4 border border-white/10 w-full text-left">
                     <p class="text-sgx-gold font-bold text-center mb-2">CALIBRACIÓN ESPACIAL</p>
                     <p>› Mueve tu cabeza para navegar el escudo.</p>
                     <p>› Atrapa: <span class="text-base align-middle">💧✨🐚🌿</span> (+ Vibes)</p>
@@ -203,7 +207,7 @@
                 <button id="boot-btn" class="w-full py-4 text-sm font-bold sgx-btn mt-2">
                     INICIAR ENLACE
                 </button>
-                <p id="loading-text" class="text-sgx-gold text-[10px] font-mono tracking-widest hidden animate-pulse">CARGANDO MATRIZ NEURONAL...</p>
+                <p id="loading-text" class="text-sgx-cyan text-[10px] font-mono tracking-widest hidden animate-pulse">CARGANDO MATRIZ NEURONAL...</p>
             </div>
         </div>
 
@@ -256,12 +260,11 @@
         let webcamRunning = false;
         let lastVideoTime = -1;
         let reqAnimFrame = null;
-        let lastFrameTime = performance.now(); // Base de Delta Time
 
         const STATE = {
             phase: 'IDLE', 
             score: 0,
-            maxScore: 150, 
+            maxScore: 350,
             playerX: 0,
             playerY: 0,
             landmarks: null
@@ -272,13 +275,15 @@
             bad: ['✂️', '🦠', '🕯️']        
         };
 
+        // Fallback robusto para asegurar emojis nativos a color
         const EMOJI_FONT = '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif';
 
         let activeItems = [];
         let particles = [];
         let floatingTexts = [];
-        let spawnTimer = 0;
+        let frameCount = 0;
         
+        // Optimización Móvil Estricta
         let devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
 
         // ==========================================
@@ -349,13 +354,11 @@
             activeItems = [];
             particles = [];
             floatingTexts = [];
-            spawnTimer = 0;
             updateHUD();
             
             if(!webcamRunning) {
                 webcamRunning = true;
-                lastFrameTime = performance.now();
-                tick(lastFrameTime);
+                tick();
             }
         }
 
@@ -376,7 +379,11 @@
             STATE.score = Math.max(0, Math.min(STATE.score, STATE.maxScore));
             const pct = Math.floor((STATE.score / STATE.maxScore) * 100);
             DOM.scoreBar.style.width = `${pct}%`;
-            DOM.scoreText.innerText = `${STATE.score} / ${STATE.maxScore}`;
+            DOM.scoreText.innerText = `${pct}%`;
+            
+            if(pct > 80) DOM.scoreBar.style.backgroundColor = '#00FFFF'; // Cyan
+            else if(pct > 40) DOM.scoreBar.style.backgroundColor = '#FDCC0D'; // Gold
+            else DOM.scoreBar.style.backgroundColor = '#FFAA00'; // Orange
         }
 
         function triggerScreenFX(type) {
@@ -385,15 +392,10 @@
         }
 
         // ==========================================
-        // RENDER PIPELINE & DELTA TIME
+        // RENDER PIPELINE (Flawless Mobile)
         // ==========================================
-        function tick(currentTime) {
+        function tick() {
             if (!webcamRunning) return;
-
-            // Calculadora de Delta Time para estabilización matemática
-            let dt = (currentTime - lastFrameTime) / 16.666; 
-            if (dt > 3) dt = 3; // Límite de seguridad para evitar saltos bruscos si hay lag
-            lastFrameTime = currentTime;
 
             if (DOM.video.currentTime !== lastVideoTime) {
                 lastVideoTime = DOM.video.currentTime;
@@ -406,7 +408,7 @@
                 }
             }
 
-            // Draw Video Background
+            // Draw Video Background 100% Nítido
             ctx.save();
             ctx.scale(-1, 1);
             ctx.translate(-DOM.canvas.width, 0);
@@ -430,23 +432,28 @@
             ctx.restore();
 
             if (STATE.phase === 'PLAYING') {
-                runGameLogic(dt);
+                const grad = ctx.createLinearGradient(0, 0, 0, 150 * devicePixelRatio);
+                grad.addColorStop(0, 'rgba(0,0,0,0.5)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, DOM.canvas.width, 150 * devicePixelRatio);
+
+                runGameLogic();
             } else if (STATE.phase === 'REWARD') {
                 runRewardLogic();
             }
 
-            renderJuice(dt);
+            renderJuice();
             reqAnimFrame = requestAnimationFrame(tick);
         }
 
         // ==========================================
-        // GAME LOGIC (DELTA OPTIMIZED)
+        // GAME LOGIC
         // ==========================================
-        function runGameLogic(dt) {
-            spawnTimer += dt;
+        function runGameLogic() {
+            frameCount++;
             
-            if (spawnTimer >= 45) { // Spawn rate estable independiente del framerate
-                spawnTimer = 0;
+            if (frameCount % 45 === 0) {
                 const isGood = Math.random() > 0.35; 
                 const arr = isGood ? ENTITIES.good : ENTITIES.bad;
                 const emoji = arr[Math.floor(Math.random() * arr.length)];
@@ -472,12 +479,13 @@
             
             for (let i = activeItems.length - 1; i >= 0; i--) {
                 let item = activeItems[i];
-                item.y += item.speed * dt; // Física desacoplada
-                item.rotation += item.rotSpeed * dt;
+                item.y += item.speed;
+                item.rotation += item.rotSpeed;
 
                 ctx.save();
                 ctx.translate(item.x, item.y);
                 ctx.rotate(item.rotation);
+                
                 ctx.fillStyle = '#FFFFFF'; 
                 ctx.font = `${65 * devicePixelRatio}px ${EMOJI_FONT}`;
                 ctx.fillText(item.emoji, 0, 0);
@@ -488,8 +496,8 @@
                 if (dist < playerHitboxRadius + item.radius) {
                     if (item.type === 'good') {
                         STATE.score += 15;
-                        createParticles(item.x, item.y, '#FDCC0D', item.emoji);
-                        createFloatingText('+15', item.x, item.y, '#FDCC0D');
+                        createParticles(item.x, item.y, '#00FFFF', item.emoji);
+                        createFloatingText('+15', item.x, item.y, '#00FFFF');
                     } else {
                         STATE.score -= 20;
                         triggerScreenFX('red');
@@ -509,11 +517,9 @@
                 if (item.y > DOM.canvas.height + 100) activeItems.splice(i, 1);
             }
 
-            // Draw Avatar
             if (STATE.landmarks && IMG_LOCTITIANS && IMG_LOCTITIANS.complete) {
                 const logoSize = 140 * devicePixelRatio; 
                 ctx.save();
-                ctx.globalCompositeOperation = 'source-over';
                 ctx.translate(STATE.playerX, STATE.playerY);
                 const tilt = (STATE.playerX - (DOM.canvas.width/2)) * 0.0005;
                 ctx.rotate(tilt);
@@ -530,7 +536,7 @@
         }
 
         // ==========================================
-        // REWARD LOGIC
+        // REWARD LOGIC (Bloom Removido)
         // ==========================================
         function runRewardLogic() {
             if (STATE.landmarks) {
@@ -543,15 +549,6 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
-                const gradient = ctx.createRadialGradient(headTopX, headTopY - (60*devicePixelRatio), 0, headTopX, headTopY - (60*devicePixelRatio), 250 * devicePixelRatio);
-                gradient.addColorStop(0, 'rgba(253, 204, 13, 0.6)'); 
-                gradient.addColorStop(0.5, 'rgba(50, 82, 123, 0.4)'); 
-                gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.arc(headTopX, headTopY - (60*devicePixelRatio), 250 * devicePixelRatio, 0, Math.PI * 2);
-                ctx.fill();
-
                 const crownItems = ['✨', '🐚', '✨', '🐚', '✨'];
                 for (let i = 0; i < crownItems.length; i++) {
                     const angle = Math.PI + (Math.PI / (crownItems.length - 1)) * i; 
@@ -563,6 +560,9 @@
                     ctx.save();
                     ctx.fillStyle = '#FFFFFF';
                     ctx.font = `${35 * devicePixelRatio}px ${EMOJI_FONT}`;
+                    // Sombra base para visibilidad sin el halo
+                    ctx.shadowColor = '#FDCC0D';
+                    ctx.shadowBlur = 10 * devicePixelRatio;
                     ctx.fillText(crownItems[i], itemX, itemY);
                     ctx.restore();
                 }
@@ -570,12 +570,9 @@
         }
 
         // ==========================================
-        // JUICE & FX (DELTA OPTIMIZED)
+        // JUICE & FX
         // ==========================================
         function createParticles(x, y, color, emoji) {
-            // Límite de hardware para no sobrecargar el stack
-            if (particles.length > 50) return; 
-
             for (let i = 0; i < 3; i++) {
                 particles.push({
                     x: x, y: y,
@@ -592,27 +589,22 @@
             floatingTexts.push({ txt: txt, x: x, y: y, life: 1.0, color: color });
         }
 
-        function renderJuice(dt) {
+        function renderJuice() {
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
-                p.x += p.vx * dt; // Escala por Delta Time
-                p.y += p.vy * dt; 
-                p.life -= 0.05 * dt;
-                
+                p.x += p.vx; p.y += p.vy; p.life -= 0.05;
                 if (p.life <= 0) particles.splice(i, 1);
                 else {
-                    ctx.save(); ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = '#FFFFFF';
+                    ctx.save(); ctx.globalAlpha = p.life; ctx.fillStyle = '#FFFFFF';
                     ctx.font = `${p.size}px ${EMOJI_FONT}`; ctx.fillText(p.emoji, p.x, p.y); ctx.restore();
                 }
             }
             for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 let ft = floatingTexts[i];
-                ft.y -= (3 * devicePixelRatio) * dt; 
-                ft.life -= 0.04 * dt;
-                
+                ft.y -= 3 * devicePixelRatio; ft.life -= 0.04;
                 if (ft.life <= 0) floatingTexts.splice(i, 1);
                 else {
-                    ctx.save(); ctx.globalAlpha = Math.max(0, ft.life); ctx.fillStyle = ft.color;
+                    ctx.save(); ctx.globalAlpha = ft.life; ctx.fillStyle = ft.color;
                     ctx.font = `900 ${28 * devicePixelRatio}px 'Orbitron', sans-serif`;
                     ctx.lineWidth = 4 * devicePixelRatio; ctx.strokeStyle = '#1A1A1A';
                     ctx.strokeText(ft.txt, ft.x, ft.y); ctx.fillText(ft.txt, ft.x, ft.y);
@@ -622,7 +614,7 @@
         }
 
         // ==========================================
-        // SNAPSHOT EXPORT
+        // SNAPSHOT EXPORT (50% LARGER LOGOS)
         // ==========================================
         function takeSnapshot() {
             triggerScreenFX('white'); 
@@ -633,7 +625,7 @@
             const h = DOM.canvas.height;
             
             ctx.lineWidth = 4 * devicePixelRatio;
-            ctx.strokeStyle = 'rgba(253, 204, 13, 0.4)';
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.4)';
             ctx.strokeRect(30 * devicePixelRatio, 30 * devicePixelRatio, w - 60 * devicePixelRatio, h - 60 * devicePixelRatio);
             
             ctx.textAlign = 'center';
@@ -648,17 +640,17 @@
             ctx.font = `700 ${12*devicePixelRatio}px 'Orbitron', sans-serif`;
             ctx.letterSpacing = "4px";
             ctx.strokeText("x SPATIALGINEERS", w/2, 100*devicePixelRatio);
-            ctx.fillStyle = '#32527B';
+            ctx.fillStyle = '#00FFFF';
             ctx.fillText("x SPATIALGINEERS", w/2, 100*devicePixelRatio);
 
+            // Logos escalados 50% más grandes (de 80 a 120)
             if (IMG_LOCTITIANS && IMG_LOCTITIANS.complete && IMG_SGX && IMG_SGX.complete) {
-                const sLogo = 80 * devicePixelRatio;
+                const sLogo = 120 * devicePixelRatio; 
                 const bottomPadding = 45 * devicePixelRatio;
                 const gap = 40 * devicePixelRatio;
                 const totalW = (sLogo * 2) + gap; 
                 const startX = w/2 - totalW/2;
                 
-                ctx.globalCompositeOperation = 'source-over'; 
                 ctx.drawImage(IMG_LOCTITIANS, startX, h - bottomPadding - sLogo, sLogo, sLogo);
                 ctx.drawImage(IMG_SGX, startX + sLogo + gap, h - bottomPadding - sLogo, sLogo, sLogo);
             }
@@ -676,7 +668,6 @@
                 alert("Protección del navegador detectada. Sácale screenshot directamente a esta obra de arte.");
             }
 
-            lastFrameTime = performance.now();
             reqAnimFrame = requestAnimationFrame(tick);
         }
 
@@ -687,3 +678,6 @@
     </script>
 </body>
 </html>
+
+
+```
