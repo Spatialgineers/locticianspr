@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>SGX | Loctitians Vibe Tracker</title>
+    <title>SGX | Locticians Vibe Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <script>
@@ -144,7 +144,7 @@
             <div class="w-full flex justify-between items-start pt-2">
                 <div class="flex flex-col">
                     <span class="text-[10px] text-sgx-cyan tracking-widest font-bold">SYS.TRACKING // ACTIVE</span>
-                    <span class="text-[9px] text-sgx-gold tracking-[0.2em] mt-1">LOCTITIANS PR x SPATIALGINEERS</span>
+                    <span class="text-[9px] text-sgx-gold tracking-[0.2em] mt-1">LOCTICIANS PR x SPATIALGINEERS</span>
                 </div>
                 <div class="text-right">
                     <span id="score-text" class="text-xl md:text-2xl font-black text-sgx-gold drop-shadow-md">0%</span>
@@ -167,7 +167,7 @@
         <div id="reward-screen" class="absolute inset-0 z-40 hidden opacity-0 transition-opacity duration-700 pointer-events-none">
             
             <div class="absolute top-12 left-1/2 -translate-x-1/2 w-full max-w-sm flex flex-col items-center drop-shadow-lg pointer-events-auto">
-                <h1 class="sgx-title text-sgx-gold text-center">LOCTITIANS PR</h1>
+                <h1 class="sgx-title text-sgx-gold text-center">LOCTICIANS PR</h1>
                 <div class="flex items-center gap-2 mt-1">
                     <span class="w-6 h-[2px] bg-sgx-cyan"></span>
                     <p class="text-sgx-cyan text-[10px] md:text-xs tracking-[0.3em] font-bold">x SPATIALGINEERS</p>
@@ -188,7 +188,7 @@
         <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-sgx-dark/95 px-4">
             <div class="sgx-glass p-8 max-w-sm w-full flex flex-col items-center text-center gap-6">
                 <div class="w-20 h-20 bg-sgx-blue/20 flex items-center justify-center p-2 rounded-full border border-sgx-cyan/50 shadow-[0_0_20px_rgba(0,255,255,0.2)]">
-                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" id="hero-logo" class="w-14 h-14 object-contain" alt="Loctitians Logo">
+                    <img src="https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png" id="hero-logo" class="w-14 h-14 object-contain" alt="Locticians Logo">
                 </div>
                 
                 <div>
@@ -216,7 +216,7 @@
         import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
 
         // ==========================================
-        // PRELOAD DE ASSETS GRÁFICOS (SGX x LOCTITIANS)
+        // PRELOAD DE ASSETS GRÁFICOS (SGX x LOCTICIANS)
         // ==========================================
         const loadImage = (src) => {
             return new Promise((resolve) => {
@@ -228,11 +228,11 @@
             });
         };
 
-        let IMG_LOCTITIANS, IMG_SGX;
+        let IMG_LOCTICIANS, IMG_SGX;
         
         async function loadBrandAssets() {
-            IMG_LOCTITIANS = await loadImage("https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png");
-            IMG_SGX = await loadImage("https://static.wixstatic.com/media/fe81a7_68a5da16aefe4e09aee2c6679b885c63~mv2.png");
+            IMG_LOCTICIANS = await loadImage("https://static.wixstatic.com/media/fe81a7_aa2016b2084444a2af6fd2aed88c1015~mv2.png");
+            IMG_SGX = await loadImage("https://static.wixstatic.com/media/fe81a7_a1b40c05203d460f841851cab0b7e251~mv2.png");
         }
         loadBrandAssets();
 
@@ -516,7 +516,7 @@
                 if (item.y > DOM.canvas.height + 100) activeItems.splice(i, 1);
             }
 
-            if (STATE.landmarks && IMG_LOCTITIANS && IMG_LOCTITIANS.complete) {
+            if (STATE.landmarks && IMG_LOCTICIANS && IMG_LOCTICIANS.complete) {
                 const logoSize = 140 * devicePixelRatio; 
                 ctx.save();
                 ctx.translate(STATE.playerX, STATE.playerY);
@@ -529,7 +529,7 @@
                 ctx.fillStyle = glow;
                 ctx.beginPath(); ctx.arc(0,0, logoSize*0.6, 0, Math.PI*2); ctx.fill();
 
-                ctx.drawImage(IMG_LOCTITIANS, -logoSize/2, -logoSize/2, logoSize, logoSize);
+                ctx.drawImage(IMG_LOCTICIANS, -logoSize/2, -logoSize/2, logoSize, logoSize);
                 ctx.restore();
             }
         }
@@ -632,9 +632,9 @@
             ctx.font = `900 ${24*devicePixelRatio}px 'Orbitron', sans-serif`;
             ctx.lineWidth = 5 * devicePixelRatio;
             ctx.strokeStyle = '#1A1A1A';
-            ctx.strokeText("LOCTITIANS PR", w/2, 70*devicePixelRatio);
+            ctx.strokeText("LOCTICIANS PR", w/2, 70*devicePixelRatio);
             ctx.fillStyle = '#FDCC0D';
-            ctx.fillText("LOCTITIANS PR", w/2, 70*devicePixelRatio);
+            ctx.fillText("LOCTICIANS PR", w/2, 70*devicePixelRatio);
             
             ctx.font = `700 ${12*devicePixelRatio}px 'Orbitron', sans-serif`;
             ctx.letterSpacing = "4px";
@@ -643,14 +643,14 @@
             ctx.fillText("x SPATIALGINEERS", w/2, 100*devicePixelRatio);
 
             // Logos escalados 50% más grandes (de 80 a 120)
-            if (IMG_LOCTITIANS && IMG_LOCTITIANS.complete && IMG_SGX && IMG_SGX.complete) {
+            if (IMG_LOCTICIANS && IMG_LOCTICIANS.complete && IMG_SGX && IMG_SGX.complete) {
                 const sLogo = 120 * devicePixelRatio; 
                 const bottomPadding = 45 * devicePixelRatio;
                 const gap = 40 * devicePixelRatio;
                 const totalW = (sLogo * 2) + gap; 
                 const startX = w/2 - totalW/2;
                 
-                ctx.drawImage(IMG_LOCTITIANS, startX, h - bottomPadding - sLogo, sLogo, sLogo);
+                ctx.drawImage(IMG_LOCTICIANS, startX, h - bottomPadding - sLogo, sLogo, sLogo);
                 ctx.drawImage(IMG_SGX, startX + sLogo + gap, h - bottomPadding - sLogo, sLogo, sLogo);
             }
 
@@ -659,7 +659,7 @@
             try {
                 const dataURL = DOM.canvas.toDataURL('image/png', 1.0);
                 const link = document.createElement('a');
-                link.download = `SGX_LOCTITIANS_SCAN_${Date.now()}.png`;
+                link.download = `SGX_LOCTICIANS_SCAN_${Date.now()}.png`;
                 link.href = dataURL;
                 link.click();
             } catch (err) {
